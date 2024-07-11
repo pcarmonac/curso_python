@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Snake Game</title>
+    <style>
+        #gameCanvas {
+            border: 1px solid black;
+        }
+    </style>
+</head>
+<body>
+    <h1>Snake Game</h1>
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <p>Score: <span id="score">0</span></p>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const gridSize = 20;
+        const tileCount = 20;
+        let gameLoop;
+
+        function drawGame(snake, food) {
+            ctx.fillStyle = 'black';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+            ctx.fillStyle = 'green';
+            snake.forEach(segment => {
+                ctx.fillRect(segment[0] * gridSize, segment[1] * gridSize, gridSize - 2, gridSize - 2);
+            });
+
+            ctx.fillStyle = 'red';
+            ctx.fillRect(food[0] * gridSize, food[1] * gridSize, gridSize - 2, gridSize - 2);
+        }
+
+        function updateGame() {
+            $.post('/move/', { direction: currentDirection }, function(data) {
+                drawGame(data.snake, data.food);
+                $('#score').text(data.score);
+
+                if (data.game_over) {
+                    alert('Game Over! Your score: ' + data.score);
+                    clearInterval(gameLoop);
+                }
+            });
+        }
+
+        let currentDirection = 'up';
+        $(document).keydown(function(e) {
+            switch(e.which) {
+                case 37: // left
+                    currentDirection = 'left';
+                    break;
+                case 38: // up
+                    currentDirection = 'up';
+                    break;
+                case 39: // right
+                    currentDirection = 'right';
+                    break;
+                case 40: // down
+                    currentDirection = 'down';
+                    break;
+                default: return;
+            }
+            e.preventDefault();
+        });
+
+        gameLoop = setInterval(updateGame, 100);
+    </script>
+</body>
+</html>
